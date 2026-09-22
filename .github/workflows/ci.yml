@@ -1,0 +1,59 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # The oldest and newest supported, plus the one in the middle most people are on.
+        python-version: ["3.9", "3.12", "3.13"]
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      - name: Install
+        run: pip install -e ".[dev]" coverage
+
+      - name: Lint
+        run: |
+          ruff check .
+          ruff format --check .
+
+      - name: Test
+        # coverage run, not pytest --cov: a plugin is imported through its entry point
+        # before pytest-cov starts measuring, so --cov under-reports this package badly.
+        run: coverage run -m pytest
+
+      - name: Coverage
+        run: |
+          coverage report --fail-under=95
+
+  timing:
+    # The timing assertions are the product, and a shared runner is where a tolerance that
+    # is too tight shows up as a flake in somebody else's CI rather than here. Repeating
+    # the suite is how that gets caught before it is their problem.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -e ".[dev]"
+      - name: Ten times over
+        run: |
+          for i in $(seq 1 10); do
+            echo "--- run $i"
+            pytest -q || exit 1
+          done
