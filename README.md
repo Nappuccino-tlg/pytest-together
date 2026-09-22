@@ -6,6 +6,7 @@ Runs things at the same instant in a test — and fails if they did not actually
 ![Python](https://img.shields.io/badge/python-3.9%20--%203.13-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Dependencies](https://img.shields.io/badge/dependencies-pytest%20only-brightgreen)
+[![PyPI](https://img.shields.io/pypi/v/pytest-together)](https://pypi.org/project/pytest-together/)
 
 ```bash
 pip install pytest-together
